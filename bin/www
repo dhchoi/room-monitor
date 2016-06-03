@@ -7,6 +7,13 @@
 var app = require('../app');
 var debug = require('debug')('app:server');
 var http = require('http');
+var db = require("../db");
+
+/**
+ * Initialize database
+ */
+
+db.initialize();
 
 /**
  * Get port from environment and store in Express.
@@ -88,3 +95,23 @@ function onListening() {
     : 'port ' + addr.port;
   debug('Listening on ' + bind);
 }
+
+/**
+ * Exit handlers
+ */
+
+process.on('exit', function () {
+  debug("Cleaning up before exiting program...");
+  db.close();
+});
+
+process.on('SIGINT', function () {
+  debug("Stopping program by Ctrl-C...");
+  process.exit(2);
+});
+
+process.on('uncaughtException', function (e) {
+  debug("Program stopped due to uncaught exception...");
+  debug(e.stack);
+  process.exit(99);
+});
