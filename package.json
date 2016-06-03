@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "start": "node ./bin/www",
-    "start:debug": "DEBUG=* node ./bin/www --development"
+    "start:debug:all": "DEBUG=* node ./bin/www --development",
+    "start:debug:app": "DEBUG=app:* node ./bin/www --development"
   },
   "dependencies": {
     "body-parser": "~1.13.2",
