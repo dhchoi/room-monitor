@@ -1,8 +1,6 @@
 var debug = require('debug')('app:database');
 var sqlite3 = require('sqlite3').verbose();
-var getDB = function () {
-  return new sqlite3.Database('./data/data.db');
-};
+var db = null;
 
 /**
  * Returns a string formatted date for SQL queries.
@@ -29,9 +27,8 @@ module.exports = {
   initialize: function () {
     debug("Initializing database...");
 
-    var db = getDB();
+    db = new sqlite3.Database('./data/data.db');
     db.run("CREATE TABLE IF NOT EXISTS env (date DATETIME DEFAULT CURRENT_TIMESTAMP PRIMARY KEY, temperature REAL, humidity REAL)");
-    db.close();
   },
 
   /**
@@ -39,14 +36,12 @@ module.exports = {
    *
    * @param temperature value to insert
    * @param humidity value to insert
-     */
+   */
   insert: function (temperature, humidity) {
     var values = [temperature, humidity];
     debug("Inserting values for (temperature, humidity): ", values);
 
-    var db = getDB();
     db.run("INSERT INTO env (temperature, humidity) VALUES (?, ?)", values);
-    db.close();
   },
 
   /**
@@ -55,16 +50,14 @@ module.exports = {
    * @param start start date
    * @param end end date
    * @param cb callback function with params (err, rows)
-     */
+   */
   getWithinDates: function (start, end, cb) {
     var startDate = formatDate(start);
     var endDate = formatDate(end);
     debug("Searching for data within range: " + startDate + " ~ " + endDate);
 
-    var db = getDB();
     var query = "SELECT * FROM env WHERE strftime('%s', date, 'localtime') BETWEEN strftime('%s', '" + startDate + "') AND strftime('%s', '" + endDate + "')";
     db.all(query, cb);
-    db.close();
   },
 
   /**
@@ -75,8 +68,15 @@ module.exports = {
   getAll: function (cb) {
     debug("Retrieving all data within database...");
 
-    var db = getDB();
     db.all("SELECT * FROM env", cb);
+  },
+
+  /**
+   * Closes the database.
+   */
+  close: function () {
+    debug("Closing the database...");
+
     db.close();
   }
 };
