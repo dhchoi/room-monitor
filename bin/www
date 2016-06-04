@@ -12,15 +12,27 @@ db.initialize();
  * Initialize serialport
  */
 var serialport = require("../serial");
-serialport.initialize("/dev/ttyATH0", 9600, function (data) {
-  debug("Received data on port: ", data);
+serialport.initialize("/dev/ttyATH0", 9600, function (message) {
+  debug("Received message on port: ", message);
 
-  // data format: "xx.xx,xx.xx"
-  var dataSplit = data.split(",");
-  var temperature = Number(dataSplit[0]);
-  var humidity = Number(dataSplit[1]);
-  db.insert(temperature, humidity);
+  var messageSplit = message.split(",");
+  if (messageSplit[0] === "data") { // message format: "data,xx.xx,xx.xx"
+    var temperature = Number(messageSplit[1]);
+    var humidity = Number(messageSplit[2]);
+    db.insert(temperature, humidity);
+  }
+  else if (messageSplit[0] === "settings") { // message format: "settings,x"
+    global.arduinoInterval = messageSplit[1];
+  }
+  else { // message format: "error,reason"
+    debug("Error response from serialport: ", messageSplit[1]);
+  }
 });
+
+// initialize global.arduinoInterval
+setTimeout(function () {
+  serialport.write("get-interval\n"); // arduino will respond with "settings,x"
+}, 2000); // since it takes more than 900ms to setup database on Yun
 
 /**
  * Create HTTP server.
@@ -99,6 +111,7 @@ function onListening() {
 process.on('exit', function () {
   debug("Cleaning up before exiting program...");
   db.close();
+  serialport.close();
 });
 
 process.on('SIGINT', function () {
