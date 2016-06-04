@@ -9,9 +9,10 @@ module.exports = {
    *
    * @param portPath path of the connection
    * @param baudRate baud rate of the connection
-   * @param cb callback function with params (data)
+   * @param openCallback callback function to call as soon as port is opened
+   * @param dataCallback callback function with params (data)
    */
-  initialize: function (portPath, baudRate, cb) {
+  initialize: function (portPath, baudRate, openCallback, dataCallback) {
     debug("Initializing serialport...");
 
     // create port
@@ -28,7 +29,8 @@ module.exports = {
       }
       else {
         debug("Port opened on path " + port.path + " with baudRate " + port.options.baudRate);
-        port.on("data", cb);
+        openCallback();
+        port.on("data", dataCallback);
       }
     });
 
