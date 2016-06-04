@@ -9,8 +9,8 @@ module.exports = {
    *
    * @param portPath path of the connection
    * @param baudRate baud rate of the connection
-   * @param openCallback callback function to call as soon as port is opened
-   * @param dataCallback callback function with params (data)
+   * @param openCallback callback function with no params, called as soon as port is opened
+   * @param dataCallback callback function with params (data), called when data arrives
    */
   initialize: function (portPath, baudRate, openCallback, dataCallback) {
     debug("Initializing serialport...");
@@ -47,7 +47,7 @@ module.exports = {
    * Writes to the open port.
    *
    * @param data to be sent
-   * @param cb callback function with params (error)
+   * @param cb callback function with params (error), called when write is finished,
    */
   write: function (data, cb) {
     if (!port) {
@@ -55,7 +55,7 @@ module.exports = {
       return;
     }
 
-    port.write(data, function () {
+    port.write(data + "\n", function () {
       port.drain(function (error) {
         if (error) {
           debug("Error while writing to port:", error);
@@ -83,6 +83,8 @@ module.exports = {
    */
   close: function () {
     debug("Closing serialport...");
-    port.close();
+    if (port) {
+      port.close();
+    }
   }
 };
