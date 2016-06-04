@@ -45,7 +45,7 @@ module.exports = {
    * Writes to the open port.
    *
    * @param data to be sent
-   * @param cb callback function with params (response)
+   * @param cb callback function with params (error)
    */
   write: function (data, cb) {
     if (!port) {
@@ -53,14 +53,15 @@ module.exports = {
       return;
     }
 
-    port.write(data, function (err, response) {
-      if (err) {
-        debug('write failed: ' + err);
-        cb(null);
-      }
-      else {
-        cb(response);
-      }
+    port.write(data, function () {
+      port.drain(function (error) {
+        if (error) {
+          debug("Error while writing to port:", error);
+        }
+        if (cb) {
+          cb(error);
+        }
+      });
     });
   },
 
@@ -73,5 +74,13 @@ module.exports = {
         debug("Available portPath: " + availablePort.comName);
       });
     });
+  },
+
+  /**
+   * Closes the serialport.
+   */
+  close: function () {
+    debug("Closing serialport...");
+    port.close();
   }
 };
