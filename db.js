@@ -50,7 +50,7 @@ module.exports = {
    *
    * @param start start date
    * @param end end date
-   * @param cb callback function with params (err, rows)
+   * @param cb callback function with params (err, rows), called after query is finished
    */
   getWithinDates: function (start, end, cb) {
     var startDate = formatDate(start);
@@ -64,7 +64,7 @@ module.exports = {
   /**
    * Returns all rows within database table.
    *
-   * @param cb callback function with params (err, rows)
+   * @param cb callback function with params (err, rows), called after query is finished
    */
   getAll: function (cb) {
     debug("Retrieving all data within database...");

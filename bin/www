@@ -13,7 +13,7 @@ db.initialize();
  */
 var serialport = require("../serial");
 serialport.initialize("/dev/ttyATH0", 9600, function () {
-    serialport.write("get-interval\n"); // initialize global.arduinoInterval (arduino will respond with "settings,x")
+    serialport.write("get-interval"); // initialize global.arduinoInterval (arduino will respond with "settings,x")
   }, function (message) {
     if (message) {
       debug("Received message on port: ", message);
