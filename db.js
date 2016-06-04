@@ -46,6 +46,7 @@ module.exports = {
 
   /**
    * Returns all rows within database table that are within date range.
+   * __NOTE__: ALWAYS CHECK DEVICE'S TIMEZONE!
    *
    * @param start start date
    * @param end end date
