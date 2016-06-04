@@ -1,37 +1,36 @@
 #!/usr/bin/env node
 
-/**
- * Module dependencies.
- */
-
-var app = require('../app');
 var debug = require('debug')('app:server');
-var http = require('http');
-var db = require("../db");
 
 /**
  * Initialize database
  */
-
+var db = require("../db");
 db.initialize();
 
 /**
- * Get port from environment and store in Express.
+ * Initialize serialport
  */
+var serialport = require("../serial");
+serialport.initialize("/dev/ttyATH0", 9600, function (data) {
+  debug("Received data on port: ", data);
 
-var port = normalizePort(process.env.PORT || '3000');
-app.set('port', port);
+  // data format: "xx.xx,xx.xx"
+  var dataSplit = data.split(",");
+  var temperature = Number(dataSplit[0]);
+  var humidity = Number(dataSplit[1]);
+  db.insert(temperature, humidity);
+});
 
 /**
  * Create HTTP server.
- */
-
-var server = http.createServer(app);
-
-/**
  * Listen on provided port, on all network interfaces.
  */
+var port = normalizePort(process.env.PORT || '3000'); // get port from environment and store in Express.
+var app = require('../app');
+app.set('port', port);
 
+var server = require('http').createServer(app);
 server.listen(port);
 server.on('error', onError);
 server.on('listening', onListening);
@@ -39,7 +38,6 @@ server.on('listening', onListening);
 /**
  * Normalize a port into a number, string, or false.
  */
-
 function normalizePort(val) {
   var port = parseInt(val, 10);
 
@@ -59,7 +57,6 @@ function normalizePort(val) {
 /**
  * Event listener for HTTP server "error" event.
  */
-
 function onError(error) {
   if (error.syscall !== 'listen') {
     throw error;
@@ -87,7 +84,6 @@ function onError(error) {
 /**
  * Event listener for HTTP server "listening" event.
  */
-
 function onListening() {
   var addr = server.address();
   var bind = typeof addr === 'string'
