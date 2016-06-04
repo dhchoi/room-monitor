@@ -56,7 +56,7 @@ module.exports = {
     var endDate = formatDate(end);
     debug("Searching for data within range: " + startDate + " ~ " + endDate);
 
-    var query = "SELECT * FROM env WHERE strftime('%s', date, 'localtime') BETWEEN strftime('%s', '" + startDate + "') AND strftime('%s', '" + endDate + "')";
+    var query = "SELECT datetime(date, 'localtime'), temperature, humidity FROM env WHERE strftime('%s', date, 'localtime') BETWEEN strftime('%s', '" + startDate + "') AND strftime('%s', '" + endDate + "')";
     db.all(query, cb);
   },
 
