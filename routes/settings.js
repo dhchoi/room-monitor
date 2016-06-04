@@ -13,7 +13,7 @@ router.post("/set-interval", function(req, res, next) {
   var interval = req.body.interval;
   debug("User request for set-interval with value: " + interval);
 
-  serialport.write("set-interval,\n", function (error) {
+  serialport.write("set-interval,"+interval+"\n", function (error) {
     if (error) {
       res.json({error: "Failed to set new interval."});
     }
