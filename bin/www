@@ -15,19 +15,21 @@ var serialport = require("../serial");
 serialport.initialize("/dev/ttyATH0", 9600, function () {
     serialport.write("get-interval\n"); // initialize global.arduinoInterval (arduino will respond with "settings,x")
   }, function (message) {
-    debug("Received message on port: ", message);
+    if (message) {
+      debug("Received message on port: ", message);
 
-    var messageSplit = message.split(",");
-    if (messageSplit[0] === "data") { // message format: "data,xx.xx,xx.xx"
-      var temperature = Number(messageSplit[1]);
-      var humidity = Number(messageSplit[2]);
-      db.insert(temperature, humidity);
-    }
-    else if (messageSplit[0] === "settings") { // message format: "settings,x"
-      global.arduinoInterval = messageSplit[1];
-    }
-    else { // message format: "error,reason"
-      debug("Error response from serialport: ", messageSplit[1]);
+      var messageSplit = message.split(",");
+      if (messageSplit[0] === "data") { // message format: "data,xx.xx,xx.xx"
+        var temperature = Number(messageSplit[1]);
+        var humidity = Number(messageSplit[2]);
+        db.insert(temperature, humidity);
+      }
+      else if (messageSplit[0] === "settings") { // message format: "settings,x"
+        global.arduinoInterval = messageSplit[1];
+      }
+      else { // message format: "error,reason"
+        debug("Error response from serialport: ", messageSplit[1]);
+      }
     }
   }
 );
