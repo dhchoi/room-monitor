@@ -1,8 +1,29 @@
 body {
-  padding: 50px;
-  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+  padding: 2rem;
 }
 
-a {
-  color: #00B7FF;
+.title-app {
+  margin-bottom: 3rem;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  margin-bottom: 5rem;
+}
+.controls input {
+  border-color: #333;
+  transition: all .3s;
+}
+.controls input:hover {
+  cursor: pointer;
+  color: #FF3B30;
+}
+
+.container-graph {
+  margin: 4rem 0;
+}
+
+.title-graph {
+  margin-bottom: 4rem;
 }
