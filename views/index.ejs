@@ -8,6 +8,9 @@
   <link rel="stylesheet" href="/stylesheets/DateTimePicker.css"/>
   <script src="//code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
           crossorigin="anonymous"></script>
+  <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"
+          integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS"
+          crossorigin="anonymous"></script>
   <script src="//cdnjs.cloudflare.com/ajax/libs/Chart.js/2.1.4/Chart.min.js"></script>
   <script src="/javascripts/DateTimePicker.js"></script>
 </head>
@@ -17,7 +20,8 @@
     <h1 class="text-center">Room Monitor</h1>
   </div>
 
-  <div class="row controls">
+  <!-- controls -->
+  <div class="row controls vertical-align">
     <div class="col-sm-5">
       <div class="text-center">
         Start Date: <input class="input-start text-center" type="text" data-field="datetime" readonly>
@@ -29,25 +33,62 @@
       </div>
     </div>
     <div class="col-sm-2">
-      <button class="btn btn-primary btn-sm btn-search">Search</button>
+      <button class="btn btn-primary btn-sm btn-search">
+        <span class="glyphicon glyphicon-search"></span>
+      </button>
+      <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target=".settings-modal">
+        <span class="glyphicon glyphicon-cog"></span>
+      </button>
     </div>
   </div>
 
+  <!-- graphs -->
   <div class="row container-graph">
     <h3 class="title-graph">Temperature</h3>
     <canvas id="chart-temperature" width="400" height="150"></canvas>
   </div>
-
   <div class="row container-graph">
     <h3 class="title-graph">Humidity</h3>
     <canvas id="chart-humidity" width="400" height="150"></canvas>
   </div>
+</div>
 
-  <div id="dtBox"></div>
+<!-- datetime box -->
+<div id="dtBox"></div>
+
+<!-- modal -->
+<div class="modal fade settings-modal" tabindex="-1" role="dialog" aria-labelledby="settingsModal">
+  <div class="modal-dialog" role="dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+            aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="settingsModal">Settings</h4>
+      </div>
+      <div class="modal-body">
+        <div class="row vertical-align">
+          <div class="col-sm-6 text-center">
+            Monitoring Interval
+          </div>
+          <div class="col-sm-6 text-center">
+            <div class="input-group input-group-interval">
+              <input type="text" class="form-control input-interval" aria-describedby="interval-units">
+              <span class="input-group-addon" id="interval-units">seconds</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary btn-save">Save Changes</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
   $(document).ready(function () {
+    var monitoringInterval = null;
 
     /**
      * Formats a Date object to a string.
@@ -142,7 +183,6 @@
         },
         dataType: "json"
       }).done(function (data) {
-        console.log(data);
         var labels = data.labels;
         var temperature = data.temperature;
         var humidity = data.humidity;
@@ -151,7 +191,25 @@
         updateChartData(humidityChart, labels, humidity);
 
       }).fail(function (jqXHR, textStatus) {
-        console.log("Request failed: " + textStatus);
+        console.log("Request failed while refreshing charts: " + textStatus);
+      });
+    }
+
+    /**
+     * Fetches the monitoring interval setting from the server and sets the value to the corresponding input field.
+     */
+    function refreshMonitoringInterval() {
+      $.ajax({
+        url: "/settings/get-interval",
+        method: "GET",
+        dataType: "json"
+      }).done(function (response) {
+        if (response.interval) {
+          monitoringInterval = response.interval;
+          $(".input-interval").val(monitoringInterval);
+        }
+      }).fail(function (jqXHR, textStatus) {
+        console.log("Request failed while refreshing interval: " + textStatus);
       });
     }
 
@@ -168,10 +226,37 @@
     var $inputEnd = $(".input-end");
     $inputStart.val(formatDate(new Date((new Date()).setDate(new Date().getDate() - 1)))); // current date - 1 day
     $inputEnd.val(formatDate(new Date()));
+    refreshMonitoringInterval();
 
     // add listeners
     $(".btn-search").on("click", function () {
       refreshCharts();
+    });
+    $(".input-interval").on("keypress", function () {
+      $(".btn-save").show();
+    });
+    $(".btn-save").on("click", function () {
+      $(".btn-save").prop("disabled", true);
+      $.ajax({
+        url: "/settings/set-interval",
+        data: {interval: $(".input-interval").val()},
+        method: "POST",
+        dataType: "json"
+      }).done(function (response) {
+        $(".btn-save").prop("disabled", false);
+        if (response.interval) {
+          monitoringInterval = response.interval;
+          $(".btn-save").hide();
+          $(".settings-modal").modal("hide");
+        }
+      }).fail(function (jqXHR, textStatus) {
+        console.log("Request failed while refreshing interval: " + textStatus);
+        $(".btn-save").prop("disabled", false);
+      });
+    });
+    $(".settings-modal").on("show.bs.modal", function (e) { // event fires immediately when the show instance method is called
+      $(".input-interval").val(monitoringInterval);
+      $(".btn-save").hide();
     });
 
     // create charts

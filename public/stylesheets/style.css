@@ -2,19 +2,24 @@ body {
   padding: 2rem;
 }
 
+.vertical-align {
+  display: flex;
+  align-items: center;
+}
+
 .title-app {
   margin-bottom: 3rem;
 }
 
 .controls {
-  display: flex;
-  align-items: center;
   margin-bottom: 5rem;
 }
+
 .controls input {
   border-color: #333;
   transition: all .3s;
 }
+
 .controls input:hover {
   cursor: pointer;
   color: #FF3B30;
@@ -26,4 +31,12 @@ body {
 
 .title-graph {
   margin-bottom: 4rem;
+}
+
+.input-group-interval {
+  width: 60%;
+}
+
+.btn-save {
+  display: none;
 }
