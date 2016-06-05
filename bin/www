@@ -13,7 +13,8 @@ db.initialize();
  */
 var serialport = require("../serial");
 serialport.initialize("/dev/ttyATH0", 9600, function () {
-    serialport.write("get-interval"); // initialize global.arduinoInterval (arduino will respond with "settings,x")
+    // initialize global.device settings (arduino will respond with settings params)
+    serialport.write("get-settings");
   }, function (message) {
     if (message) {
       debug("Received message on port: ", message);
@@ -24,8 +25,9 @@ serialport.initialize("/dev/ttyATH0", 9600, function () {
         var humidity = Number(messageSplit[2]);
         db.insert(temperature, humidity);
       }
-      else if (messageSplit[0] === "settings") { // message format: "settings,x"
-        global.arduinoInterval = messageSplit[1];
+      else if (messageSplit[0] === "settings") { // message format: "settings,xxx,bool"
+        global.deviceInterval = Number(messageSplit[1]); // seconds
+        global.deviceDisplay = (messageSplit[2].trim() === "true");
       }
       else { // message format: "error,reason"
         debug("Error response from serialport: ", messageSplit[1]);

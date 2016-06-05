@@ -40,3 +40,7 @@ body {
 .btn-save {
   display: none;
 }
+
+.row-setting {
+  margin: 1rem 0;
+}

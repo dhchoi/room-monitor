@@ -3,23 +3,33 @@ var serialport = require("../serial");
 var express = require("express");
 var router = express.Router();
 
-router.route("/interval")
+router.route("/device")
   .get(function (req, res, next) {
-    debug("Responding interval with value: " + global.arduinoInterval);
+    var settings = {
+      interval: global.deviceInterval,
+      display: global.deviceDisplay
+    };
+    debug("Responding device settings with values", settings);
 
-    res.json({interval: global.arduinoInterval});
+    res.json(settings);
   })
   .post(function (req, res, next) {
-    var interval = req.body.interval;
-    debug("User request for set-interval with value: " + interval);
+    var settings = {
+      interval: req.body.interval,
+      display: req.body.display
+    };
+    debug("Request for new device settings with values" + settings);
 
-    serialport.write("set-interval," + interval, function (error) {
+    serialport.write("set-settings," + settings.interval + "," + settings.display, function (error) {
       if (error) {
-        return next(new Error("Failed to set new interval on device."));
+        return next(new Error("Failed to set new device settings."));
       }
 
       setTimeout(function () { // to ensure that value gets updated
-        res.json({interval: global.arduinoInterval});
+        res.json({
+          interval: global.deviceInterval,
+          display: global.deviceDisplay
+        });
       }, 300);
     });
   });
