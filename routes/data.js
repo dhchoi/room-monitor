@@ -3,44 +3,57 @@ var db = require("../db");
 var express = require("express");
 var router = express.Router();
 
-router.get("/within-dates", function(req, res, next) {
-  var startDateParam =  req.query.startDate;
+function isValidDate(date) {
+  return (Object.prototype.toString.call(date) === "[object Date]") && !isNaN(date.getTime());
+}
+
+router.get("/within-dates", function (req, res, next) {
+  var startDateParam = req.query.startDate;
   var endDateParam = req.query.endDate;
+  var startDate = new Date(startDateParam);
+  var endDate = new Date(endDateParam);
   debug("Received user request for startDate: " + startDateParam + ", endDate: " + endDateParam);
 
   if (!startDateParam || !endDateParam) {
-    res.json({error: "Empty start date or end date given."})
+    return next(new Error("Empty start date or end date given."));
   }
-  else {
-    var startDate =  new Date(startDateParam);
-    var endDate = new Date(endDateParam);
 
-    db.getWithinDates(startDate, endDate, function (err, rows) {
-      if (err) {
-        debug("Error:", err);
-        res.json({error: err});
-      }
-      else {
-        debug("Found " + rows.length + " entries for user's request.");
+  if (!isValidDate(startDate) || !isValidDate(endDate)) {
+    return next(new Error("Requested dates are in invalid format."));
+  }
 
-        // reformat data
-        var labels = [];
-        var temperature = [];
-        var humidity = [];
-        for (var i = 0; i < rows.length; i++) {
-          labels.push(rows[i]["datetime(date, 'localtime')"]);
-          temperature.push(rows[i].temperature);
-          humidity.push(rows[i].humidity);
-        }
+  db.getWithinDates(startDate, endDate, function (err, rows) {
+    if (err) {
+      debug(err);
+      return next(new Error("Failed to retrieve data from server."));
+    }
 
-        res.json({
-          labels: labels,
-          temperature: temperature,
-          humidity: humidity
-        });
-      }
+    debug("Found " + rows.length + " entries for user's request.");
+
+    // reformat data
+    var labels = [];
+    var temperature = [];
+    var humidity = [];
+    for (var i = 0; i < rows.length; i++) {
+      labels.push(rows[i]["datetime(date, 'localtime')"]);
+      temperature.push(rows[i].temperature);
+      humidity.push(rows[i].humidity);
+    }
+
+    res.json({
+      labels: labels,
+      temperature: temperature,
+      humidity: humidity
     });
-  }
+
+  });
+
+});
+
+// error handling middleware
+router.use(function (err, req, res, next) {
+  debug(err);
+  next(err);
 });
 
 module.exports = router;
