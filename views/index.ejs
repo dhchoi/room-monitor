@@ -200,7 +200,7 @@
      */
     function refreshMonitoringInterval() {
       $.ajax({
-        url: "/settings/get-interval",
+        url: "/settings/interval",
         method: "GET",
         dataType: "json"
       }).done(function (response) {
@@ -238,7 +238,7 @@
     $(".btn-save").on("click", function () {
       $(".btn-save").prop("disabled", true);
       $.ajax({
-        url: "/settings/set-interval",
+        url: "/settings/interval",
         data: {interval: $(".input-interval").val()},
         method: "POST",
         dataType: "json"
