@@ -37,11 +37,7 @@ router.route("/device")
 // error handling middleware
 router.use(function (err, req, res, next) {
   debug(err);
-  res.status(err.status || 500)
-    .json({
-      error: err.name,
-      message: err.message
-    });
+  next(err);
 });
 
 module.exports = router;
