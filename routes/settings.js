@@ -15,14 +15,23 @@ router.post("/set-interval", function (req, res, next) {
 
   serialport.write("set-interval," + interval, function (error) {
     if (error) {
-      res.json({error: "Failed to set new interval."});
+      return next(new Error("Failed to set new interval on device."));
     }
-    else {
-      setTimeout(function () {
-        res.json({interval: global.arduinoInterval});
-      }, 300);
-    }
+
+    setTimeout(function () { // to ensure that value gets updated
+      res.json({interval: global.arduinoInterval});
+    }, 300);
   });
+});
+
+// error handling middleware
+router.use(function (err, req, res, next) {
+  debug(err);
+  res.status(err.status || 500)
+    .json({
+      error: err.name,
+      message: err.message
+    });
 });
 
 module.exports = router;
