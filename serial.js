@@ -47,11 +47,15 @@ module.exports = {
    * Writes to the open port.
    *
    * @param data to be sent
-   * @param cb callback function with params (error), called when write is finished,
+   * @param cb [optional] callback function with params (error), called when write is finished,
    */
   write: function (data, cb) {
     if (!port) {
-      debug("No open port available.");
+      var error = new Error("No open port available.");
+      debug(error.message);
+      if (cb) {
+        cb(error);
+      }
       return;
     }
 
