@@ -8,6 +8,9 @@
     "start:debug:app": "DEBUG=app:* node ./bin/www --development",
     "test": "mocha tests"
   },
+  "engines": {
+    "node": ">=0.10.3 <0.12"
+  },
   "dependencies": {
     "body-parser": "~1.13.2",
     "cookie-parser": "~1.3.5",
